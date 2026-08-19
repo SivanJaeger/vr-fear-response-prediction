@@ -214,10 +214,280 @@
     "feature_set": "context_only",
     "model": "ridge"
   },
-  "physiology_adds_value": {
-    "context_only_best_test_MAE": 1.3074485837209089,
-    "combined_best_test_MAE": 0.8938359822378206,
-    "combined_improves_on_context": true
+  "physiology_value_assessment": {
+    "original_held_out_split": {
+      "context_only_best_test_MAE": 1.3074485837209089,
+      "combined_best_test_MAE": 0.8938359822378206,
+      "combined_improves_on_context_original_split": true
+    },
+    "participant_aware_cv": {
+      "context_only_best_cv_MAE_mean": 1.8211912435091377,
+      "combined_best_cv_MAE_mean": 2.090789193412023,
+      "combined_improves_on_context_cv": false
+    },
+    "repeated_participant_holdout": {
+      "n_splits": 50,
+      "context_only": {
+        "MAE_mean": 1.899707145327212,
+        "MAE_median": 1.8550690972095425,
+        "MAE_std": 0.606752113841302
+      },
+      "combined": {
+        "MAE_mean": 1.8183513169014092,
+        "MAE_median": 1.815819824577308,
+        "MAE_std": 0.3379557355351802
+      },
+      "paired_difference_context_minus_combined": {
+        "mean": 0.08135582842580312,
+        "median": 0.022503484280144148,
+        "std": 0.5328408082364234,
+        "ci_2.5pct": -0.31690750490320657,
+        "ci_97.5pct": 1.2211019039659567,
+        "fraction_splits_combined_better": 0.54
+      }
+    },
+    "overall_conclusion": "inconclusive",
+    "summary": "Evidence that physiology adds predictive value beyond context is inconclusive. The combined model performs better on one held-out participant split, but worse under participant-aware cross-validation. With only 28 participants, this difference is unstable and may depend strongly on which participants are held out."
+  },
+  "sensitivity_excluding_baseline": {
+    "description": "Sensitivity analysis restricted to exposure levels 1-9 (baseline level 0 excluded), since level 0 has a strong SUDS floor effect and all baseline-corrected physiological deltas are trivially 0 there, which could make prediction artificially easy. This does not replace the primary analysis, which uses all levels 0-9.",
+    "n_observations": 252,
+    "levels_included": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "feature_sets": {
+      "context_only": {
+        "dummy_mean": {
+          "cv": {
+            "MAE_mean": 2.318002097958525,
+            "RMSE_mean": 2.735555971270861,
+            "R2_mean": -0.15765718339523419,
+            "MAE_std": 0.5364174235001875,
+            "RMSE_std": 0.5454501094188742,
+            "R2_std": 0.10796731407141733
+          },
+          "held_out_test": {
+            "MAE": 2.65263748597082,
+            "RMSE": 2.9385824489895187,
+            "R2": -1.0187956399045084
+          },
+          "best_params": {},
+          "n_train_observations": 198,
+          "n_test_observations": 54
+        },
+        "ridge": {
+          "cv": {
+            "MAE_mean": 1.8152234507930491,
+            "RMSE_mean": 2.252766602962177,
+            "R2_mean": 0.15142612251679274,
+            "MAE_std": 0.1608351955679294,
+            "RMSE_std": 0.2034920668559211,
+            "R2_std": 0.25466638096825944
+          },
+          "held_out_test": {
+            "MAE": 1.3356495450357841,
+            "RMSE": 1.9265200266509266,
+            "R2": 0.13231187616756634
+          },
+          "best_params": {
+            "model__alpha": 10.0
+          },
+          "n_train_observations": 198,
+          "n_test_observations": 54
+        },
+        "random_forest": {
+          "cv": {
+            "MAE_mean": 1.9736925925925923,
+            "RMSE_mean": 2.3752550905768577,
+            "R2_mean": 0.0182239878094989,
+            "MAE_std": 0.35932950202955316,
+            "RMSE_std": 0.4391032757649262,
+            "R2_std": 0.4521928652683598
+          },
+          "held_out_test": {
+            "MAE": 1.649753086419753,
+            "RMSE": 2.0017028758764828,
+            "R2": 0.06326699270424119
+          },
+          "best_params": {
+            "model__max_depth": null,
+            "model__min_samples_leaf": 1
+          },
+          "n_train_observations": 198,
+          "n_test_observations": 54
+        },
+        "best_model": "ridge"
+      },
+      "physiology_only": {
+        "dummy_mean": {
+          "cv": {
+            "MAE_mean": 2.318002097958525,
+            "RMSE_mean": 2.735555971270861,
+            "R2_mean": -0.15765718339523419,
+            "MAE_std": 0.5364174235001875,
+            "RMSE_std": 0.5454501094188742,
+            "R2_std": 0.10796731407141733
+          },
+          "held_out_test": {
+            "MAE": 2.65263748597082,
+            "RMSE": 2.9385824489895187,
+            "R2": -1.0187956399045084
+          },
+          "best_params": {},
+          "n_train_observations": 198,
+          "n_test_observations": 54
+        },
+        "ridge": {
+          "cv": {
+            "MAE_mean": 2.5461329313755243,
+            "RMSE_mean": 2.9708758797585615,
+            "R2_mean": -0.3955871623135067,
+            "MAE_std": 0.5464180949114573,
+            "RMSE_std": 0.5156159703424172,
+            "R2_std": 0.21191355878796558
+          },
+          "held_out_test": {
+            "MAE": 2.08166999056828,
+            "RMSE": 2.3861919962981686,
+            "R2": -0.33115113454371303
+          },
+          "best_params": {
+            "model__alpha": 50.0
+          },
+          "n_train_observations": 198,
+          "n_test_observations": 54
+        },
+        "random_forest": {
+          "cv": {
+            "MAE_mean": 2.493006663638902,
+            "RMSE_mean": 2.907233035668856,
+            "R2_mean": -0.4043569852716346,
+            "MAE_std": 0.26330135753842504,
+            "RMSE_std": 0.2811983786402503,
+            "R2_std": 0.42511281072724316
+          },
+          "held_out_test": {
+            "MAE": 1.93885948885293,
+            "RMSE": 2.2986829245796274,
+            "R2": -0.2353065289417553
+          },
+          "best_params": {
+            "model__max_depth": 3,
+            "model__min_samples_leaf": 1
+          },
+          "n_train_observations": 198,
+          "n_test_observations": 54
+        },
+        "best_model": "dummy_mean"
+      },
+      "combined": {
+        "dummy_mean": {
+          "cv": {
+            "MAE_mean": 2.318002097958525,
+            "RMSE_mean": 2.735555971270861,
+            "R2_mean": -0.15765718339523419,
+            "MAE_std": 0.5364174235001875,
+            "RMSE_std": 0.5454501094188742,
+            "R2_std": 0.10796731407141733
+          },
+          "held_out_test": {
+            "MAE": 2.65263748597082,
+            "RMSE": 2.9385824489895187,
+            "R2": -1.0187956399045084
+          },
+          "best_params": {},
+          "n_train_observations": 198,
+          "n_test_observations": 54
+        },
+        "ridge": {
+          "cv": {
+            "MAE_mean": 2.0739553047472414,
+            "RMSE_mean": 2.535587265168785,
+            "R2_mean": -0.11690348170664988,
+            "MAE_std": 0.2960334670386328,
+            "RMSE_std": 0.32459108631468914,
+            "R2_std": 0.4588050257444907
+          },
+          "held_out_test": {
+            "MAE": 1.0713570354954622,
+            "RMSE": 1.5562677505774423,
+            "R2": 0.43377996373789973
+          },
+          "best_params": {
+            "model__alpha": 50.0
+          },
+          "n_train_observations": 198,
+          "n_test_observations": 54
+        },
+        "random_forest": {
+          "cv": {
+            "MAE_mean": 2.1589885240609705,
+            "RMSE_mean": 2.527693999605301,
+            "R2_mean": -0.10189223082240946,
+            "MAE_std": 0.36611150417422883,
+            "RMSE_std": 0.46239910932761874,
+            "R2_std": 0.48679526444449034
+          },
+          "held_out_test": {
+            "MAE": 1.7092374013444984,
+            "RMSE": 2.0912533063213594,
+            "R2": -0.022421276416199065
+          },
+          "best_params": {
+            "model__max_depth": 3,
+            "model__min_samples_leaf": 1
+          },
+          "n_train_observations": 198,
+          "n_test_observations": 54
+        },
+        "best_model": "ridge"
+      }
+    },
+    "physiology_value_assessment": {
+      "original_held_out_split": {
+        "context_only_best_test_MAE": 1.3356495450357841,
+        "combined_best_test_MAE": 1.0713570354954622,
+        "combined_improves_on_context_original_split": true
+      },
+      "participant_aware_cv": {
+        "context_only_best_cv_MAE_mean": 1.8152234507930491,
+        "combined_best_cv_MAE_mean": 2.0739553047472414,
+        "combined_improves_on_context_cv": false
+      },
+      "repeated_participant_holdout": {
+        "n_splits": 50,
+        "context_only": {
+          "MAE_mean": 1.825215415168586,
+          "MAE_median": 1.7841420530238723,
+          "MAE_std": 0.4017876666596347
+        },
+        "combined": {
+          "MAE_mean": 1.8057187402294361,
+          "MAE_median": 1.856146421867018,
+          "MAE_std": 0.3616680805213556
+        },
+        "paired_difference_context_minus_combined": {
+          "mean": 0.019496674939149906,
+          "median": -0.01674003398780166,
+          "std": 0.33063978266923083,
+          "ci_2.5pct": -0.44319787174560754,
+          "ci_97.5pct": 0.5980617458240655,
+          "fraction_splits_combined_better": 0.42
+        }
+      },
+      "overall_conclusion": "inconclusive",
+      "summary": "Evidence that physiology adds predictive value beyond context is inconclusive. The combined model performs better on one held-out participant split, but worse under participant-aware cross-validation. With only 28 participants, this difference is unstable and may depend strongly on which participants are held out."
+    },
+    "conclusion_materially_changed_vs_primary": false,
+    "fraction_combined_better_delta_vs_primary": -0.12000000000000005
   },
   "saved_pipeline": "models/best_pipeline.joblib"
 }

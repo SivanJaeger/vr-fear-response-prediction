@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from vr_fear_prediction import modeling, visualization
+from vr_fear_prediction import modeling, robustness, visualization
 from vr_fear_prediction.data import build_long_dataset
 from vr_fear_prediction.features import build_feature_matrix
 from vr_fear_prediction.splitting import held_out_participant_split
@@ -75,6 +75,9 @@ def test_run_full_pipeline_end_to_end(tmp_path, monkeypatch):
     monkeypatch.setattr(modeling, "REPORTS_DIR", tmp_path / "reports")
     monkeypatch.setattr(modeling, "METRICS_PATH", tmp_path / "reports" / "metrics.json")
     monkeypatch.setattr(visualization, "FIGURES_DIR", tmp_path / "reports" / "figures")
+    # Keep the integration test fast: the repeated-holdout logic itself is covered in
+    # depth by test_robustness.py, so a handful of splits is enough here to check wiring.
+    monkeypatch.setattr(robustness, "DEFAULT_N_SPLITS", 5)
 
     import vr_fear_prediction.data as data_module
 
@@ -90,4 +93,13 @@ def test_run_full_pipeline_end_to_end(tmp_path, monkeypatch):
         assert feature_set in metrics["feature_sets"]
         assert "best_model" in metrics["feature_sets"][feature_set]
     assert "overall_best" in metrics
-    assert "physiology_adds_value" in metrics
+    assert "physiology_value_assessment" in metrics
+    assert metrics["physiology_value_assessment"]["overall_conclusion"] in (
+        "inconclusive",
+        "combined_likely_better",
+        "context_only_likely_sufficient",
+    )
+    assert "sensitivity_excluding_baseline" in metrics
+    assert metrics["sensitivity_excluding_baseline"]["levels_included"] == list(range(1, 10))
+    assert (tmp_path / "reports" / "repeated_holdout_results.csv").exists()
+    assert (tmp_path / "reports" / "repeated_holdout_results_excluding_baseline.csv").exists()

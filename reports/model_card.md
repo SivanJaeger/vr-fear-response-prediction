@@ -64,11 +64,26 @@ and is noted here rather than hidden.
 
 Dummy (mean) baseline CV MAE: 2.37 ± 0.51 (constant across feature sets, as expected).
 
-**Does physiology add value beyond context?** On the held-out test participants, yes:
-combined (MAE 0.89) clearly outperforms context_only (MAE 1.31). On participant-aware CV,
-context_only has a marginally *better* mean MAE than combined (1.82 vs. 2.09). See
-README.md "A note on model selection instability" for why these two criteria disagree and
-which one this project treats as more informative.
+**Does physiology add value beyond context? Verdict: inconclusive.** On the held-out test
+participants, combined (MAE 0.89) outperforms context_only (MAE 1.31). On
+participant-aware CV, that ranking flips: context_only (1.82) beats combined (2.09). A
+single six-participant test set is not automatically more informative than a five-fold
+cross-validation estimate, so this project does not treat either number alone as decisive.
+
+To resolve which criterion to trust, we ran the same context-only-vs-combined Ridge
+comparison across **50 repeated outer `GroupShuffleSplit`s** (`vr_fear_prediction.
+robustness.repeated_participant_holdout`), each holding out a different set of
+participants with alpha re-selected each time from the outer-training participants only.
+Result: combined had a lower MAE in only **54% of 50 splits**, and the 95% interval on the
+paired MAE difference (`context_only_MAE - combined_MAE`) is **[-0.32, +1.22]** --
+straddling zero. A sensitivity check restricted to exposure levels 1-9 (excluding the
+level-0 floor effect) gives the same qualitative picture (46% -> now 42% combined-better,
+still straddling zero; see `reports/metrics.json` -> `sensitivity_excluding_baseline`).
+
+> Evidence that physiology adds predictive value beyond context is inconclusive. The
+> combined model performs better on one held-out participant split, but worse under
+> participant-aware cross-validation. With only 28 participants, this difference is
+> unstable and may depend strongly on which participants are held out.
 
 **Physiology alone is weak**: no model beats the dummy baseline on physiology_only in CV,
 and only modestly on the held-out test. This mirrors the source paper's central finding --
@@ -98,11 +113,17 @@ reporting of a small-sample result that does not look like a polished commercial
 
 - **N = 28 participants.** Every metric here has wide uncertainty; point estimates should
   not be treated as precise.
-- **Single held-out test split.** With so few participants, a different random seed for
-  the held-out split could materially change which feature set looks best (see "note on
-  model selection instability" in the README).
+- **Whether physiology adds value beyond context is inconclusive on this dataset**, not
+  merely uncertain due to a single unlucky split -- a 50-split repeated holdout evaluation
+  confirms the comparison is close to a coin flip (54% combined-better) with a paired-MAE
+  95% interval straddling zero, and this does not change materially when the baseline
+  floor-effect level is excluded (see README "Results").
+- **The repeated-holdout evaluation resamples the same 28 participants**; it quantifies
+  sensitivity to which participants are held out, but is not a substitute for testing on
+  an independent, larger sample.
 - **Floor effect at baseline.** Level 0 SUDS is 0 for most participants, which is easy to
-  predict and likely inflates apparent performance somewhat.
+  predict and likely inflates apparent performance somewhat -- tested directly via the
+  levels-1-9-only sensitivity analysis, which did not change the qualitative conclusion.
 - **From-scratch raw-signal processing (notebook demo) does not closely match the
   official precomputed features** in absolute terms, particularly for short-window RMSSD.
   This is disclosed, not hidden, in the notebook, and is why the main pipeline uses the

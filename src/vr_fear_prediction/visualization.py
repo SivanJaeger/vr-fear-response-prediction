@@ -128,6 +128,65 @@ def plot_residuals(y_true: np.ndarray, y_pred: np.ndarray, title: str, filename:
     return _save(fig, filename)
 
 
+def plot_paired_mae_difference(results_df: pd.DataFrame, title: str, filename: str) -> Path:
+    """Distribution of the paired (context_only_MAE - combined_MAE) difference across
+    repeated participant-level holdout splits.
+
+    Positive values favor the combined model; negative values favor context-only. This is
+    an honest view of how much the context-vs-combined comparison depends on which
+    participants happen to be held out -- it should NOT be read as picking a winner on its
+    own if the distribution straddles zero.
+    """
+    diff = results_df["diff_context_minus_combined"]
+    frac_combined_better = float((diff > 0).mean())
+
+    fig, ax = plt.subplots(figsize=(8.5, 5.5))
+    sns.histplot(diff, bins=20, color="#2e6fb3", ax=ax)
+    ax.axvline(0, color="black", linestyle="--", linewidth=1.5)
+    ax.text(0.97, 0.95, "combined better →", transform=ax.transAxes, ha="right", va="top", fontsize=11, color="#2e6fb3")
+    ax.text(0.03, 0.95, "← context-only better", transform=ax.transAxes, ha="left", va="top", fontsize=11, color="#b3312e")
+    ax.set_title(title, fontsize=15)
+    ax.set_xlabel("Paired MAE difference (context_only_MAE - combined_MAE)")
+    ax.set_ylabel("Number of splits")
+    fig.text(
+        0.5,
+        -0.06,
+        f"Combined had lower MAE in {frac_combined_better:.0%} of {len(diff)} repeated participant-level holdout "
+        "splits (different random choices of which participants are held out). A distribution straddling zero "
+        "means this comparison is unstable, not that one model is reliably better.",
+        ha="center",
+        fontsize=10,
+        wrap=True,
+    )
+    fig.tight_layout()
+    return _save(fig, filename)
+
+
+def plot_baseline_sensitivity_comparison(
+    primary_df: pd.DataFrame, sensitivity_df: pd.DataFrame, filename: str = "baseline_sensitivity_comparison.png"
+) -> Path:
+    """Compact comparison of the paired MAE difference distribution with vs. without the
+    level-0 baseline (floor-effect) observations, to show whether excluding baseline
+    materially changes the context-vs-combined comparison."""
+    combined = pd.concat(
+        [
+            primary_df.assign(analysis="All levels 0-9\n(primary)"),
+            sensitivity_df.assign(analysis="Levels 1-9 only\n(sensitivity)"),
+        ],
+        ignore_index=True,
+    )
+
+    fig, ax = plt.subplots(figsize=(7.5, 5.5))
+    sns.boxplot(data=combined, x="analysis", y="diff_context_minus_combined", hue="analysis", palette=PALETTE, legend=False, ax=ax)
+    sns.stripplot(data=combined, x="analysis", y="diff_context_minus_combined", color="black", alpha=0.35, size=3, ax=ax)
+    ax.axhline(0, color="gray", linestyle="--", linewidth=1)
+    ax.set_ylabel("Paired MAE difference\n(context_only - combined)")
+    ax.set_xlabel("")
+    ax.set_title("Does excluding the baseline (floor-effect) level\nchange the context-vs-combined comparison?", fontsize=14)
+    fig.tight_layout()
+    return _save(fig, filename)
+
+
 def plot_permutation_importance(importance_df: pd.DataFrame, title: str, filename: str, top_n: int = 15) -> Path:
     top = importance_df.head(top_n).iloc[::-1]
     fig, ax = plt.subplots(figsize=(8, max(4, 0.35 * len(top))))
