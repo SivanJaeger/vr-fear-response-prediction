@@ -1,0 +1,223 @@
+{
+  "dataset": {
+    "n_participants": 28,
+    "n_observations": 280,
+    "levels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "target": "suds",
+    "target_range": [
+      0,
+      10
+    ]
+  },
+  "feature_sets": {
+    "context_only": {
+      "dummy_mean": {
+        "cv": {
+          "MAE_mean": 2.3739601307189537,
+          "RMSE_mean": 2.794406578048777,
+          "R2_mean": -0.1288210159328988,
+          "MAE_std": 0.5059572401648373,
+          "RMSE_std": 0.497711827719267,
+          "R2_std": 0.10372509634465596
+        },
+        "held_out_test": {
+          "MAE": 2.5572727272727263,
+          "RMSE": 2.821635225246633,
+          "R2": -0.8617636401214301
+        },
+        "best_params": {},
+        "n_train_observations": 220,
+        "n_test_observations": 60
+      },
+      "ridge": {
+        "cv": {
+          "MAE_mean": 1.8211912435091377,
+          "RMSE_mean": 2.275150762554163,
+          "R2_mean": 0.20247433037645077,
+          "MAE_std": 0.11590922543495284,
+          "RMSE_std": 0.12836783607998306,
+          "R2_std": 0.21770810660969311
+        },
+        "held_out_test": {
+          "MAE": 1.3074485837209089,
+          "RMSE": 1.8634391220732496,
+          "R2": 0.18800524183025402
+        },
+        "best_params": {
+          "model__alpha": 10.0
+        },
+        "n_train_observations": 220,
+        "n_test_observations": 60
+      },
+      "random_forest": {
+        "cv": {
+          "MAE_mean": 1.9427366666666663,
+          "RMSE_mean": 2.3599511855597695,
+          "R2_mean": 0.11051980948736362,
+          "MAE_std": 0.30891935974008183,
+          "RMSE_std": 0.4084797718336371,
+          "R2_std": 0.39610127116099403
+        },
+        "held_out_test": {
+          "MAE": 1.571888888888889,
+          "RMSE": 1.9398313214183225,
+          "R2": 0.1200646963299774
+        },
+        "best_params": {
+          "model__max_depth": null,
+          "model__min_samples_leaf": 1
+        },
+        "n_train_observations": 220,
+        "n_test_observations": 60
+      },
+      "best_model": "ridge"
+    },
+    "physiology_only": {
+      "dummy_mean": {
+        "cv": {
+          "MAE_mean": 2.3739601307189537,
+          "RMSE_mean": 2.794406578048777,
+          "R2_mean": -0.1288210159328988,
+          "MAE_std": 0.5059572401648373,
+          "RMSE_std": 0.497711827719267,
+          "R2_std": 0.10372509634465596
+        },
+        "held_out_test": {
+          "MAE": 2.5572727272727263,
+          "RMSE": 2.821635225246633,
+          "R2": -0.8617636401214301
+        },
+        "best_params": {},
+        "n_train_observations": 220,
+        "n_test_observations": 60
+      },
+      "ridge": {
+        "cv": {
+          "MAE_mean": 2.6369159469426418,
+          "RMSE_mean": 3.0155550835339575,
+          "R2_mean": -0.31671467032459705,
+          "MAE_std": 0.5805287110189311,
+          "RMSE_std": 0.5843930534368103,
+          "R2_std": 0.21846574611206093
+        },
+        "held_out_test": {
+          "MAE": 1.889752816467794,
+          "RMSE": 2.1917519867100808,
+          "R2": -0.1233255197461065
+        },
+        "best_params": {
+          "model__alpha": 50.0
+        },
+        "n_train_observations": 220,
+        "n_test_observations": 60
+      },
+      "random_forest": {
+        "cv": {
+          "MAE_mean": 2.4725633333333334,
+          "RMSE_mean": 2.8690760892454157,
+          "R2_mean": -0.22475305176740826,
+          "MAE_std": 0.2551643688988638,
+          "RMSE_std": 0.3095045587677338,
+          "R2_std": 0.17537441553688518
+        },
+        "held_out_test": {
+          "MAE": 1.7309999999999994,
+          "RMSE": 2.1282419279075637,
+          "R2": -0.059167868355526565
+        },
+        "best_params": {
+          "model__max_depth": null,
+          "model__min_samples_leaf": 1
+        },
+        "n_train_observations": 220,
+        "n_test_observations": 60
+      },
+      "best_model": "dummy_mean"
+    },
+    "combined": {
+      "dummy_mean": {
+        "cv": {
+          "MAE_mean": 2.3739601307189537,
+          "RMSE_mean": 2.794406578048777,
+          "R2_mean": -0.1288210159328988,
+          "MAE_std": 0.5059572401648373,
+          "RMSE_std": 0.497711827719267,
+          "R2_std": 0.10372509634465596
+        },
+        "held_out_test": {
+          "MAE": 2.5572727272727263,
+          "RMSE": 2.821635225246633,
+          "R2": -0.8617636401214301
+        },
+        "best_params": {},
+        "n_train_observations": 220,
+        "n_test_observations": 60
+      },
+      "ridge": {
+        "cv": {
+          "MAE_mean": 2.090789193412023,
+          "RMSE_mean": 2.5435005827645365,
+          "R2_mean": -0.003555474696600425,
+          "MAE_std": 0.20458004889145595,
+          "RMSE_std": 0.21747681668357308,
+          "R2_std": 0.3041037410826622
+        },
+        "held_out_test": {
+          "MAE": 0.8938359822378206,
+          "RMSE": 1.3603490216904064,
+          "R2": 0.5672635232912917
+        },
+        "best_params": {
+          "model__alpha": 50.0
+        },
+        "n_train_observations": 220,
+        "n_test_observations": 60
+      },
+      "random_forest": {
+        "cv": {
+          "MAE_mean": 2.185146666666667,
+          "RMSE_mean": 2.5286272151407054,
+          "R2_mean": -0.030216772199551257,
+          "MAE_std": 0.34126015677192684,
+          "RMSE_std": 0.44205088465869957,
+          "R2_std": 0.4820076573127569
+        },
+        "held_out_test": {
+          "MAE": 1.4471111111111112,
+          "RMSE": 1.8689645578551024,
+          "R2": 0.18318267835877466
+        },
+        "best_params": {
+          "model__max_depth": null,
+          "model__min_samples_leaf": 1
+        },
+        "n_train_observations": 220,
+        "n_test_observations": 60
+      },
+      "best_model": "ridge"
+    }
+  },
+  "random_seed": 42,
+  "cv_folds": 5,
+  "overall_best": {
+    "feature_set": "context_only",
+    "model": "ridge"
+  },
+  "physiology_adds_value": {
+    "context_only_best_test_MAE": 1.3074485837209089,
+    "combined_best_test_MAE": 0.8938359822378206,
+    "combined_improves_on_context": true
+  },
+  "saved_pipeline": "models/best_pipeline.joblib"
+}
