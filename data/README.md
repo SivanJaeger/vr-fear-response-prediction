@@ -50,8 +50,7 @@ This project's unit of analysis is **one row per (participant, exposure level)**
 **280 observations from 28 participants x 10 levels**, produced by
 `vr_fear_prediction.data.reshape_wide_to_long` from the wide `summary.csv`. Every
 participant contributes exactly 10 rows, which is why **all splitting and
-cross-validation in this project groups by participant** (see README.md "Leakage
-prevention").
+cross-validation in this project groups by participant** (see README.md "Validation approach").
 
 ## Physiological signals available
 
@@ -98,7 +97,7 @@ impractical to download and process for this project's scope.
 ## Repeated observations per participant
 
 Yes -- every participant contributes 10 rows (levels 0-9), i.e. this is a repeated-measures
-design. See README.md "Leakage prevention" for how this shapes the splitting strategy.
+design. See README.md "Validation approach" for how this shapes the splitting strategy.
 
 ## Sample size and appropriate analysis
 

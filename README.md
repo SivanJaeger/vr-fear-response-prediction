@@ -65,8 +65,7 @@ Evidence that physiology adds predictive value beyond context is inconclusive. T
 original held-out split favored the combined model, but participant-aware
 cross-validation favored context-only. Across the 50 repeated participant splits, combined
 won only 54% of the time, and the interval on the paired MAE difference crossed zero.
-Excluding the baseline level didn't resolve this either. Physiology on its own barely beat
-the dummy baseline under cross-validation, which fits the dataset's own framing:
+Excluding the baseline level didn't resolve this either. Physiology on its own did not beat the dummy baseline under cross-validation, which fits the dataset's own framing:
 subjective and physiological fear are related but don't move together closely.
 
 Full numbers are in [`reports/metrics.json`](reports/metrics.json),
