@@ -70,8 +70,15 @@ def _context_cols():
     return get_feature_columns("context_only")
 
 
+def test_compare_feature_sets_covers_all_three_feature_sets(long_df):
+    result = modeling.compare_feature_sets(long_df, test_size=0.34)
+    assert set(result.keys()) == {"context_only", "physiology_only", "combined"}
+    for feature_set, models in result.items():
+        assert models["best_model"] in ("dummy_mean", "ridge", "random_forest")
+        assert "held_out_test" in models[models["best_model"]]
+
+
 def test_run_full_pipeline_end_to_end(tmp_path, monkeypatch):
-    monkeypatch.setattr(modeling, "MODELS_DIR", tmp_path / "models")
     monkeypatch.setattr(modeling, "REPORTS_DIR", tmp_path / "reports")
     monkeypatch.setattr(modeling, "METRICS_PATH", tmp_path / "reports" / "metrics.json")
     monkeypatch.setattr(visualization, "FIGURES_DIR", tmp_path / "reports" / "figures")
@@ -86,7 +93,6 @@ def test_run_full_pipeline_end_to_end(tmp_path, monkeypatch):
     metrics = modeling.run_full_pipeline()
 
     assert (tmp_path / "reports" / "metrics.json").exists()
-    assert (tmp_path / "models" / "best_pipeline.joblib").exists()
     on_disk = json.loads((tmp_path / "reports" / "metrics.json").read_text())
     assert on_disk["dataset"]["n_participants"] == 6
     for feature_set in ("context_only", "physiology_only", "combined"):

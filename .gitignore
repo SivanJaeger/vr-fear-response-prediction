@@ -24,17 +24,15 @@ env/
 .env
 *.env.local
 
-# Raw and interim data (large, licensed, reproducible via download script)
+# Raw data (large, licensed, reproducible via download script) and processed output
+# (reproducible via `python -m vr_fear_prediction.data`)
 data/raw/*
 !data/raw/.gitkeep
-data/interim/*
-!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
 
 # Downloaded archive
 *.zip
-
-# Trained models (large binary artifacts) - keep the final selected pipeline only
-models/*.joblib.tmp
 
 # Editor
 .vscode/

@@ -1,16 +1,15 @@
-"""Robustness checks for the context-vs-physiology conclusion.
+"""Robustness checks for the context-vs-physiology comparison.
 
-The primary analysis (`vr_fear_prediction.modeling.run_full_pipeline`) compares
+The primary analysis (`vr_fear_prediction.modeling.compare_feature_sets`) compares
 context-only and combined models on a *single* held-out-participant split. With only 28
 participants, that single split is not automatically more informative than
 participant-aware cross-validation, and the two can disagree (as they do on this
-dataset -- see README.md "A note on model selection instability"). This module answers
-two follow-up questions honestly rather than picking whichever result looks better:
+dataset). This module answers two follow-up questions:
 
 1. **Is the single-split result stable?** `repeated_participant_holdout` reruns the
    context-only vs. combined Ridge comparison across many different outer
-   `GroupShuffleSplit` seeds (i.e. many different choices of which participants are held
-   out), so the comparison can be judged across a *distribution* of splits instead of one.
+   `GroupShuffleSplit` seeds (different choices of which participants are held out), so
+   the comparison can be judged across a *distribution* of splits instead of one.
 2. **Is the result driven by the level-0 floor effect?** `sensitivity_excluding_baseline`
    repeats the primary analysis and the repeated-holdout evaluation restricted to exposure
    levels 1-9, since level 0 has near-zero SUDS for most participants and all
@@ -240,7 +239,7 @@ def sensitivity_excluding_baseline(long_df: pd.DataFrame, n_splits: int | None =
     """
     subset = long_df[long_df["level"] > 0].reset_index(drop=True)
 
-    feature_set_metrics, _fitted_pipelines, _held_out_predictions = compare_feature_sets(subset)
+    feature_set_metrics = compare_feature_sets(subset)
 
     repeated_df = repeated_participant_holdout(subset, n_splits=n_splits)
     repeated_summary = summarize_repeated_holdout(repeated_df)

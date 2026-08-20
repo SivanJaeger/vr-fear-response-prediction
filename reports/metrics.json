@@ -488,6 +488,5 @@
     },
     "conclusion_materially_changed_vs_primary": false,
     "fraction_combined_better_delta_vs_primary": -0.12000000000000005
-  },
-  "saved_pipeline": "models/best_pipeline.joblib"
+  }
 }

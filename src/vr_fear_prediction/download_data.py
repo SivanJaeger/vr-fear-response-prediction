@@ -2,14 +2,11 @@
 
 Dataset: Krumnikl et al. (2026), Zenodo record 20796399, DOI 10.5281/zenodo.20796399,
 license CC-BY-4.0. The record contains a single ~467 MB archive (``vr_spider_dataset.zip``)
-holding per-participant raw recordings (``pXX.csv``, several hundred MB each) plus a small
-participant-level ``summary.csv`` with precomputed physiological features and subjective
-fear (SUDS) ratings.
+holding per-participant raw recordings plus a small participant-level ``summary.csv`` with
+precomputed physiological features and subjective fear (SUDS) ratings.
 
-By default this script only extracts the small summary files needed for the main modeling
-pipeline (a few hundred KB). Raw per-participant signal files are large (150 MB-1.2 GB each,
-~9 GB uncompressed in total) and are only extracted on request, for the raw-signal-processing
-demonstration in the exploration notebook.
+This project's analysis only uses ``summary.csv``, so this script downloads the archive
+and extracts just that (and its column-description files), a few hundred KB in total.
 """
 
 from __future__ import annotations
@@ -90,46 +87,13 @@ def extract_summary_files(archive_path: Path, out_dir: Path = DATA_RAW_DIR) -> N
             print(f"Extracted {name} -> {out_dir / name}")
 
 
-def extract_raw_signal_files(
-    archive_path: Path, participants: list[str], out_dir: Path = DATA_RAW_DIR / "signals"
-) -> None:
-    """Extract selected raw per-participant recordings (large files, opt-in only)."""
-    out_dir.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(archive_path) as zf:
-        names_in_archive = set(zf.namelist())
-        for participant in participants:
-            filename = f"{participant}.csv"
-            if filename not in names_in_archive:
-                raise RuntimeError(f"{filename} not found in archive")
-            info = zf.getinfo(filename)
-            print(f"Extracting {filename} ({info.file_size / 1e6:.0f} MB uncompressed)...")
-            with zf.open(filename) as src, (out_dir / filename).open("wb") as dst:
-                shutil.copyfileobj(src, dst)
-            print(f"  -> {out_dir / filename}")
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--with-raw-signals",
-        nargs="*",
-        metavar="PARTICIPANT",
-        default=None,
-        help=(
-            "Also extract raw per-participant signal files (large, e.g. 150-1200 MB each). "
-            "Pass participant ids in lowercase filename form, e.g. p31, p9. "
-            "With no ids given, extracts p31 (the smallest file) for demonstration purposes."
-        ),
-    )
     parser.add_argument("--force-download", action="store_true", help="Re-download even if a valid cached archive exists.")
     args = parser.parse_args()
 
     archive_path = download_archive(force=args.force_download)
     extract_summary_files(archive_path)
-
-    if args.with_raw_signals is not None:
-        participants = args.with_raw_signals or ["p31"]
-        extract_raw_signal_files(archive_path, participants)
 
     print("\nDone. Summary data available in data/raw/.")
 

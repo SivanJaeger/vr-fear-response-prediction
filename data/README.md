@@ -88,25 +88,12 @@ in BPM. Precomputed `PPG_HR`/`PULSE_HR` are in BPM, `HRV_SDNN`/`HRV_RMSSD` in ms
 `RESP_RATE` in breaths/minute, `EDA_MEAN` in raw sensor units (participant- and
 session-relative; not calibrated to microsiemens), `SUDS` is unitless 0-10.
 
-## Raw vs. precomputed features -- and why this project uses precomputed features
+## Raw vs. precomputed features
 
-The dataset contains **both** raw signals and precomputed per-level features. This
-project's main modeling pipeline uses the dataset authors' **precomputed** features
-honestly, rather than reprocessing 9 GB of raw signals, because:
-
-1. Full raw processing of all 28 participants is impractical for a student project and
-   for GitHub Actions CI (large downloads, long runtimes).
-2. The precomputed features come from the paper authors' domain-informed pipeline
-   (documented in `pX_description.txt`/`summary_description.txt`), which is more
-   defensible than a quickly-built from-scratch pipeline for the primary analysis.
-
-A real from-scratch signal-processing pipeline (NeuroKit2-based EDA/PPG/respiration
-feature extraction, see `src/vr_fear_prediction/signal_processing.py`) is still
-implemented, unit-tested with synthetic fixtures, and demonstrated in
-`notebooks/01_exploration.ipynb` on one real participant's raw recording (downloaded
-separately via `--with-raw-signals`) as a sanity check against the precomputed features --
-see the notebook for an honest discussion of where the from-scratch estimates agree and
-disagree with the official ones.
+The dataset contains both raw per-sample signals and precomputed per-level features. This
+project's analysis uses the dataset authors' precomputed features (`summary.csv`) rather
+than reprocessing the raw recordings, which are ~9 GB in total across 28 participants --
+impractical to download and process for this project's scope.
 
 ## Repeated observations per participant
 
@@ -150,17 +137,10 @@ python -m vr_fear_prediction.download_data
 This downloads the archive from Zenodo (~467 MB), verifies its MD5 checksum against the
 value published in the Zenodo record, and extracts only `summary.csv`,
 `summary_description.txt`, and `pX_description.txt` into `data/raw/` (a few hundred KB).
-To also fetch one raw per-participant recording for the signal-processing demo in the
-exploration notebook:
-
-```bash
-python -m vr_fear_prediction.download_data --with-raw-signals p31
-```
 
 ## Directory layout
 
 - `data/raw/` -- downloaded, unmodified files from Zenodo (gitignored)
-- `data/interim/` -- reserved for intermediate artifacts (gitignored)
 - `data/processed/` -- `features_long.csv`, the reshaped (participant, level) table
-  produced by `vr_fear_prediction.data` (committed -- small, and redistribution is
-  permitted by CC-BY-4.0 with the attribution given above)
+  produced by `python -m vr_fear_prediction.data` (gitignored; regenerate it rather than
+  committing it)

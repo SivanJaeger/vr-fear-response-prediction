@@ -3,8 +3,8 @@
 For every feature set, compares a DummyRegressor baseline against regularized linear
 regression (Ridge) and a RandomForestRegressor, using participant-aware GroupKFold cross-
 validation for model/hyperparameter comparison and a held-out group of participants for a
-final generalization check. All preprocessing (imputation, scaling, one-hot encoding) is
-fit inside a scikit-learn Pipeline so it only ever sees training folds.
+final check. All preprocessing (imputation, scaling, one-hot encoding) is fit inside a
+scikit-learn Pipeline so it only ever sees training folds.
 """
 
 from __future__ import annotations
@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
@@ -35,7 +34,6 @@ from vr_fear_prediction.splitting import (
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-MODELS_DIR = PROJECT_ROOT / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 METRICS_PATH = REPORTS_DIR / "metrics.json"
 
@@ -137,9 +135,7 @@ def fit_and_evaluate(
     return best_pipeline, result
 
 
-def compare_feature_sets(
-    long_df: pd.DataFrame, test_size: float = 0.2, seed: int = RANDOM_SEED
-) -> tuple[dict, dict[str, dict[str, Pipeline]], dict[str, dict]]:
+def compare_feature_sets(long_df: pd.DataFrame, test_size: float = 0.2, seed: int = RANDOM_SEED) -> dict:
     """Run the context-only / physiology-only / combined x Dummy/Ridge/RandomForest
     comparison once on the given long-format dataframe.
 
@@ -147,8 +143,6 @@ def compare_feature_sets(
     the primary analysis (all exposure levels) and the baseline-exclusion sensitivity
     analysis (levels 1-9 only, see `vr_fear_prediction.robustness`) without duplication.
     """
-    fitted_pipelines: dict[str, dict[str, Pipeline]] = {}
-    held_out_predictions: dict[str, dict] = {}
     feature_set_metrics: dict = {}
 
     for feature_set in FEATURE_SETS:
@@ -162,40 +156,29 @@ def compare_feature_sets(
         X_test, y_test = X.iloc[test_idx], y.iloc[test_idx]
 
         feature_set_metrics[feature_set] = {}
-        fitted_pipelines[feature_set] = {}
-
         for model_name, (estimator, param_grid) in _model_registry().items():
-            pipeline, result = fit_and_evaluate(
+            _pipeline, result = fit_and_evaluate(
                 X_train, y_train, groups_train, X_test, y_test, numeric_cols, categorical_cols, model_name, estimator, param_grid
             )
             feature_set_metrics[feature_set][model_name] = result
-            fitted_pipelines[feature_set][model_name] = pipeline
 
         best_model_name = min(
             feature_set_metrics[feature_set], key=lambda m: feature_set_metrics[feature_set][m]["cv"]["MAE_mean"]
         )
         feature_set_metrics[feature_set]["best_model"] = best_model_name
-        held_out_predictions[feature_set] = {
-            "y_true": y_test.to_numpy(),
-            "y_pred": fitted_pipelines[feature_set][best_model_name].predict(X_test),
-            "pipeline": fitted_pipelines[feature_set][best_model_name],
-            "X_test": X_test,
-            "y_test": y_test,
-        }
 
-    return feature_set_metrics, fitted_pipelines, held_out_predictions
+    return feature_set_metrics
 
 
 def run_full_pipeline() -> dict:
     """Train/evaluate context-only, physiology-only, and combined models, run the
     repeated participant-holdout and baseline-exclusion robustness checks, and write
-    reports/metrics.json + figures + the selected fitted pipeline.
+    reports/metrics.json and the central figures.
     """
     # Local import: avoids a module-load-time circular import (robustness.py imports
     # build_preprocessor/compare_feature_sets from this module at its top level).
     from vr_fear_prediction import robustness
 
-    MODELS_DIR.mkdir(parents=True, exist_ok=True)
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
     long_df, validation_report = build_long_dataset()
@@ -213,8 +196,7 @@ def run_full_pipeline() -> dict:
         "cv_folds": N_CV_FOLDS,
     }
 
-    feature_set_metrics, fitted_pipelines, held_out_predictions = compare_feature_sets(long_df)
-    metrics["feature_sets"] = feature_set_metrics
+    metrics["feature_sets"] = compare_feature_sets(long_df)
 
     overall_best_feature_set = min(
         FEATURE_SETS, key=lambda fs: metrics["feature_sets"][fs][metrics["feature_sets"][fs]["best_model"]]["cv"]["MAE_mean"]
@@ -222,10 +204,9 @@ def run_full_pipeline() -> dict:
     overall_best_model = metrics["feature_sets"][overall_best_feature_set]["best_model"]
     metrics["overall_best"] = {"feature_set": overall_best_feature_set, "model": overall_best_model}
 
-    # --- Does physiology add value beyond context? Judged from three angles at once
-    # (single held-out split, participant-aware CV, and a repeated-holdout evaluation)
-    # rather than trusting whichever single number looks best. See robustness.py and
-    # README.md "A note on model selection instability". ---
+    # Does physiology add value beyond context? Judged from three angles at once (single
+    # held-out split, participant-aware CV, and a repeated-holdout evaluation) rather than
+    # trusting whichever single number looks best -- see robustness.py.
     context_result = metrics["feature_sets"]["context_only"]
     combined_result = metrics["feature_sets"]["combined"]
 
@@ -241,7 +222,7 @@ def run_full_pipeline() -> dict:
         primary_repeated_summary,
     )
 
-    # --- Sensitivity analysis: does excluding the level-0 floor effect change the picture? ---
+    # Sensitivity analysis: does excluding the level-0 floor effect change the picture?
     sensitivity = robustness.sensitivity_excluding_baseline(long_df)
     sensitivity_repeated_df = sensitivity["repeated_df"]
     sensitivity_repeated_df.to_csv(REPORTS_DIR / "repeated_holdout_results_excluding_baseline.csv", index=False)
@@ -261,36 +242,10 @@ def run_full_pipeline() -> dict:
     )
     metrics["sensitivity_excluding_baseline"]["fraction_combined_better_delta_vs_primary"] = float(frac_delta)
 
-    best_pipeline_overall = held_out_predictions[overall_best_feature_set]["pipeline"]
-    joblib.dump(best_pipeline_overall, MODELS_DIR / "best_pipeline.joblib")
-    saved_pipeline_path = MODELS_DIR / "best_pipeline.joblib"
-    try:
-        metrics["saved_pipeline"] = str(saved_pipeline_path.relative_to(PROJECT_ROOT))
-    except ValueError:
-        metrics["saved_pipeline"] = str(saved_pipeline_path)
-
     METRICS_PATH.write_text(json.dumps(metrics, indent=2))
 
-    ridge_coefs = evaluation.standardized_ridge_coefficients(fitted_pipelines["combined"]["ridge"])
-    ridge_coefs.to_csv(REPORTS_DIR / "ridge_coefficients_combined.csv", index=False)
-
-    _generate_figures(long_df, metrics, held_out_predictions, overall_best_feature_set, primary_repeated_df, sensitivity_repeated_df)
-
-    return metrics
-
-
-def _generate_figures(
-    long_df: pd.DataFrame,
-    metrics: dict,
-    held_out_predictions: dict,
-    best_feature_set: str,
-    primary_repeated_df: pd.DataFrame,
-    sensitivity_repeated_df: pd.DataFrame,
-) -> None:
     visualization.plot_suds_and_physio_by_level(long_df)
     visualization.plot_dissociation(long_df)
-    visualization.plot_feature_set_comparison(metrics)
-
     visualization.plot_paired_mae_difference(
         primary_repeated_df,
         "Stability of the context-vs-combined comparison across 50 held-out participant splits",
@@ -300,29 +255,7 @@ def _generate_figures(
         primary_repeated_df, sensitivity_repeated_df, "baseline_sensitivity_comparison.png"
     )
 
-    # Diagnostics are generated both for the CV-selected overall-best feature set and for
-    # "combined" specifically, since combined is the feature set most relevant to the
-    # primary research question (does physiology add value beyond context alone) even
-    # when it is not the CV-selected winner overall (see README "A note on model
-    # selection instability").
-    feature_sets_to_plot = {best_feature_set, "combined"}
-    for feature_set in feature_sets_to_plot:
-        result = held_out_predictions[feature_set]
-        suffix = "" if feature_set == best_feature_set else f"_{feature_set}"
-        visualization.plot_predicted_vs_observed(
-            result["y_true"],
-            result["y_pred"],
-            f"Predicted vs. observed SUDS ({feature_set}, held-out participants)",
-            f"predicted_vs_observed{suffix}.png",
-        )
-        visualization.plot_residuals(
-            result["y_true"], result["y_pred"], f"Residuals ({feature_set}, held-out participants)", f"residuals{suffix}.png"
-        )
-        importance_df = evaluation.permutation_importance_on_holdout(result["pipeline"], result["X_test"], result["y_test"])
-        visualization.plot_permutation_importance(
-            importance_df, f"Permutation importance ({feature_set}, held-out participants)", f"permutation_importance{suffix}.png"
-        )
-        importance_df.to_csv(REPORTS_DIR / f"permutation_importance{suffix}.csv", index=False)
+    return metrics
 
 
 def main() -> None:
